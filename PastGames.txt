@@ -1,0 +1,1 @@
+leant, 4, hovel, 5, roost, 4, inane, 6, linen, 4, grave, 6, inane, 5, shady, 6, hydro, 4,urban, 6, steal, 2, 
