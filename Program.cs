@@ -26,7 +26,7 @@ for (int i = 0; i < readChoiceList.Length; i++)     //  Create list of choice wo
 }
 int targetNumber = rand.Next(0, choiceList.Count);
 // Console.WriteLine(targetNumber);     Debugging
-string targetWord = choiceList[targetNumber];   //  Select the secret word.
+string targetWord = "worry"; //choiceList[targetNumber];   //  Randomly Select the secret word.
 List<char> targetWordChar = new List<char>();   //  Make a list of characters from target word.
 for (int i = 0; i < 5; i++)
 { targetWordChar.Add(targetWord[i]); }
@@ -61,8 +61,13 @@ Console.WriteLine("End words check");
 
 Console.ReadKey();*/
 
-Debug.Assert(IsValidGuess("aback") == true);        //  Asserts for validation.
-Debug.Assert(IsValidGuess("wxyz") == false);
+Debug.Assert(IsValidGuess("aback", ref allWordList, ref wordsToAdd) == true);        //  Asserts for validation.
+Debug.Assert(IsValidGuess("wxyz", ref allWordList, ref wordsToAdd) == false);
+
+//List<char> targetCharTempTest = new List<char>(){'a', 'b', 'a', 'c', 'k'};  //  Testing CheckWord method.
+//Debug.Assert(CheckWord("aback", "aback", targetCharTempTest) == true, "Should match target word.");
+//Debug.Assert(CheckWord("abase", "aback", targetCharTempTest) == false, "Word doesn't match target.");
+
 
 Console.Clear();        //  Give instructions.
 Console.WriteLine(@"Welcome to Wordze. 
@@ -83,6 +88,7 @@ Guess #4:
 Guess #5: 
 Guess #6: ");
 
+// Game play, starting with getting guess.
 do
 {
 
@@ -90,13 +96,13 @@ do
     {
         Console.SetCursorPosition(0, 7);
         Console.Write("Current guess: ");
-        currentGuess = Console.ReadLine().ToLower();
-    } while (!IsValidGuess(currentGuess));      // Check if word is 5-letters and in word list.
+        currentGuess = Console.ReadLine().ToLower();    //  Convert all to lower case for ease in analysis.
+    } while (!IsValidGuess(currentGuess, ref allWordList, ref wordsToAdd));      // Check if word is 5-letters and in word list.
     Console.SetCursorPosition(0, 6);
-    Console.WriteLine("                                              ");
+    Console.WriteLine("                                                   ");
     correctCount = 0;       //  Reset correct count on each turn
 
-    List<char> targetCharTemp = new List<char>();
+    List<char> targetCharTemp = new List<char>();       //  Create a list of chars of target for comparison to guess
     foreach (char ch in targetWordChar)
     { targetCharTemp.Add(ch); }
     CheckWord(currentGuess, targetWord, targetCharTemp);    //  Check word and color letters.
@@ -114,10 +120,14 @@ do
 //  End of game stuff
 Console.SetCursorPosition(0, 6);
 Console.ForegroundColor = ConsoleColor.Green;
-Console.WriteLine($"The secret word was {targetWord}.                     ");
+Console.WriteLine($"The secret word was {targetWord}.                          ");
 if (turn < 6)
 { Console.WriteLine($"You won in {turn} guesses!"); }   // Win message.
-
+else
+{
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine($"You didn't get it this time.  Please play again.");
+}
 Console.ForegroundColor = ConsoleColor.White;   
 
 string currentGame = $"{targetWord}" + ", " + $"{turn}" + ", "; //  Add current game to stats.
@@ -128,7 +138,7 @@ File.WriteAllText("WordsToAdd.txt", wordsToAdd);        //  check for words to a
 
 
 
-bool IsValidGuess(string word)  //  Checks if word has 5 letters and is in allWordList
+static bool IsValidGuess(string word, ref List<string> allWordList, ref string wordsToAdd)  //  Checks if word has 5 letters and is in allWordList
 {
     bool validLength = false;
     bool validWord = false;
@@ -147,7 +157,7 @@ bool IsValidGuess(string word)  //  Checks if word has 5 letters and is in allWo
     if (!allWordList.Contains(word))
     {
         Console.SetCursorPosition(0, 6);
-        Console.WriteLine("That is not a word that I know.  Try again.   \nCurrent guess:            ");
+        Console.WriteLine("That is not a word that I know.  Try again.   \nCurrent guess:                 ");
         
         wordsToAdd = wordsToAdd + word + ", ";
         return false;
@@ -165,23 +175,23 @@ bool IsValidGuess(string word)  //  Checks if word has 5 letters and is in allWo
     else { return false; }
 }
 
-void CheckWord(string guess, string target, List<char> targetCharTemp)
+//  Check if guessed word matches target word.  Color coordinate letters.
+bool CheckWord(string currentGuess, string targetWord, List<char> targetCharTemp)
 {
-    for (int i = 0; i < 5; i++)
+
+    for (int i = 0; i < 5; i++)     // Check each letter successively.
     {
-
-
-        if (currentGuess[i] == targetWord[i])
+        if (currentGuess[i] == targetWord[i])       // If letter in correct spot, green.
         {
-            correctCount++;
+            correctCount++;                                //  Count the number of correct letters for win condition.
             Console.SetCursorPosition(10 + i, 0 + turn);
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write($"{currentGuess[i]}");
             Console.ForegroundColor = ConsoleColor.White;
-            targetCharTemp.Remove(targetWordChar[i]);
+            targetCharTemp.Remove(targetWordChar[i]);   //  Mark correct letter as already used in tempChar List.
             targetCharTemp.Insert(i, '-');
         }
-        else if (targetCharTemp.Contains(currentGuess[i])) // && (currentGuess[i] != targetWordChar[i]))
+        else if (targetCharTemp.Contains(currentGuess[i])) // If letter in word but wrong spot, yellow.
         {
             Console.SetCursorPosition(10 + i, 0 + turn);
             Console.ForegroundColor = ConsoleColor.Yellow;
@@ -190,10 +200,11 @@ void CheckWord(string guess, string target, List<char> targetCharTemp)
         }
         else
         {
-            Console.SetCursorPosition(10 + i, 0 + turn);
+            Console.SetCursorPosition(10 + i, 0 + turn);    //  If not in word, leave white.
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write($"{currentGuess[i]}");
 
         }
     }
+    return true;
 }
