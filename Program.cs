@@ -26,7 +26,7 @@ for (int i = 0; i < readChoiceList.Length; i++)     //  Create list of choice wo
 }
 int targetNumber = rand.Next(0, choiceList.Count);
 // Console.WriteLine(targetNumber);     Debugging
-string targetWord = "worry"; //choiceList[targetNumber];   //  Randomly Select the secret word.
+string targetWord = choiceList[targetNumber];   //  Randomly Select the secret word.
 List<char> targetWordChar = new List<char>();   //  Make a list of characters from target word.
 for (int i = 0; i < 5; i++)
 { targetWordChar.Add(targetWord[i]); }
@@ -125,6 +125,7 @@ if (turn < 6)
 { Console.WriteLine($"You won in {turn} guesses!"); }   // Win message.
 else
 {
+    turn++;
     Console.ForegroundColor = ConsoleColor.Yellow;
     Console.WriteLine($"You didn't get it this time.  Please play again.");
 }
